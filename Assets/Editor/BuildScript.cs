@@ -29,7 +29,8 @@ namespace UnityBuilderAction
             System.IO.Directory.CreateDirectory(buildPath);
 
             // Scenes to include (matches EditorBuildSettings.asset)
-            string[] scenes = new[] { "Assets/Scenes/Main.unity" };
+            string[] scenes = System.Array.ConvertAll(
+                EditorBuildSettings.scenes, s => s.path);
 
             var options = new BuildPlayerOptions
             {
