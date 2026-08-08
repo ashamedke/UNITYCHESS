@@ -139,6 +139,19 @@ jobs:
           path: build/Android/*.apk
           retention-days: 30
 
+      - name: Extract and Push Build Log on Failure
+        if: failure()
+        run: |
+          mkdir -p debug
+          cp -f $(find / -name Editor.log -o -name build.log 2>/dev/null | grep unity3d | head -1) debug/Editor.log || true
+          
+      - name: Upload Debug Log
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: Unity-Build-Log
+          path: debug/Editor.log
+
       - name: Print build summary
         if: success()
         run: |
