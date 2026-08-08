@@ -49,4 +49,5 @@ crashlytics-build.properties
 
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Pp]lugins/[Aa]ndroid/[Gg]radle*
-/[Aa]ssets/[Pp]lugins/[Aa]ndroid/stockfish*
+# Stockfish binary fetched by CI
+Assets/StreamingAssets/stockfish*

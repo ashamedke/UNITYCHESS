@@ -42,23 +42,23 @@ jobs:
 
       - name: Download and extract Stockfish ARM64
         run: |
-          mkdir -p Assets/Plugins/Android
+          mkdir -p Assets/StreamingAssets
           curl -fsSL "${{ env.STOCKFISH_URL }}" -o stockfish.tar
           tar -xf stockfish.tar
           # Find the binary (name varies by release)
           SF_BIN=$(find . -type f \( -name "stockfish" -o -name "stockfish-*" \) \
                     ! -name "*.tar" ! -name "*.zip" | head -1)
           echo "Found binary: $SF_BIN"
-          cp "$SF_BIN" Assets/Plugins/Android/stockfish
-          chmod +x Assets/Plugins/Android/stockfish
+          cp "$SF_BIN" Assets/StreamingAssets/stockfish
+          chmod +x Assets/StreamingAssets/stockfish
           echo "✅ Stockfish binary ready"
-          ls -lh Assets/Plugins/Android/stockfish
+          ls -lh Assets/StreamingAssets/stockfish
 
       - name: Upload Stockfish binary
         uses: actions/upload-artifact@v4
         with:
           name: stockfish-binary
-          path: Assets/Plugins/Android/stockfish
+          path: Assets/StreamingAssets/stockfish
           retention-days: 1
 
   # ─────────────────────────────────────────────────────────────────────────
@@ -80,10 +80,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: stockfish-binary
-          path: Assets/Plugins/Android
+          path: Assets/StreamingAssets
 
       - name: Fix Stockfish permissions
-        run: chmod +x Assets/Plugins/Android/stockfish
+        run: chmod +x Assets/StreamingAssets/stockfish
 
       - name: Cache Unity Library folder
         uses: actions/cache@v4
