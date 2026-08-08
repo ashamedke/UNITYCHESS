@@ -249,9 +249,8 @@ public class AnalyzeScreen : MonoBehaviour
     {
         if (gameIndexLabel != null && _gameList != null)
             gameIndexLabel.text = $"Game {_gameIndex + 1} of {_gameList.Count}";
-        btnPrevGame?.GetComponent<Button>().interactable = _gameIndex > 0;
-        btnNextGame?.GetComponent<Button>().interactable =
-            _gameList != null && _gameIndex < _gameList.Count - 1;
+        if (btnPrevGame != null) btnPrevGame.interactable = _gameIndex > 0;
+        if (btnNextGame != null) btnNextGame.interactable = _gameList != null && _gameIndex < _gameList.Count - 1;
     }
 
     // ── Engine ────────────────────────────────────────────────────────────────

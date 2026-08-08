@@ -42,11 +42,11 @@ public class ScreenManager : MonoBehaviour
     private void Start()
     {
         // Force landscape orientation — never unlocked
-        Screen.orientation = ScreenOrientation.AutoRotation;
-        Screen.autorotateToPortrait = false;
-        Screen.autorotateToPortraitUpsideDown = false;
-        Screen.autorotateToLandscapeLeft = true;
-        Screen.autorotateToLandscapeRight = true;
+        UnityEngine.Screen.orientation = ScreenOrientation.AutoRotation;
+        UnityEngine.Screen.autorotateToPortrait = false;
+        UnityEngine.Screen.autorotateToPortraitUpsideDown = false;
+        UnityEngine.Screen.autorotateToLandscapeLeft = true;
+        UnityEngine.Screen.autorotateToLandscapeRight = true;
 
         ShowScreen(Screen.Watch); // Default tab (mirrors App.tsx → /watch)
     }

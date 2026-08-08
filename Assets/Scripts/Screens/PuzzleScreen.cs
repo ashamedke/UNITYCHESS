@@ -232,9 +232,10 @@ public class PuzzleScreen : MonoBehaviour
 
         bool correct = uci == expected;
 
+        bool isCapture = _board.PieceAt(to) != '\0';
         _board.MakeMove(uci);
         ChessAudioManager.Instance?.PlayMoveSound(
-            new ChessMove { IsCapture = _board.PieceAt(to) != '\0' },
+            new ChessMove { Flags = isCapture ? ChessBoard.FLAG_CAPTURE : 0 },
             _board.IsInCheck());
 
         if (correct)

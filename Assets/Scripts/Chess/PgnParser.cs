@@ -96,10 +96,10 @@ public static class PgnParser
             if (char.IsWhiteSpace(c)) { i++; continue; }
 
             // Result tokens
-            if (pgn.StartsWith("1-0", i) || pgn.StartsWith("0-1", i) ||
-                pgn.StartsWith("1/2-1/2", i) || pgn[i] == '*')
+            if ((pgn.IndexOf("1-0", i) == i) || (pgn.IndexOf("0-1", i) == i) ||
+                (pgn.IndexOf("1/2-1/2", i) == i) || pgn[i] == '*')
             {
-                i += pgn.StartsWith("1/2-1/2", i) ? 7 : pgn.StartsWith("1-0", i) || pgn.StartsWith("0-1", i) ? 3 : 1;
+                i += (pgn.IndexOf("1/2-1/2", i) == i) ? 7 : (pgn.IndexOf("1-0", i) == i) || (pgn.IndexOf("0-1", i) == i) ? 3 : 1;
                 break;
             }
 
