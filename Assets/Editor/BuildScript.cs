@@ -41,14 +41,12 @@ namespace UnityBuilderAction
 
             // Apply scripting backend & architecture
             PlayerSettings.SetScriptingBackend(
-                BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
-            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+                BuildTargetGroup.Android, ScriptingImplementation.Mono2x);
+            
+            // Mono only supports ARMv7 on Android
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
             PlayerSettings.Android.minSdkVersion       = AndroidSdkVersions.AndroidApiLevel24;
             PlayerSettings.Android.targetSdkVersion    = (AndroidSdkVersions)33;
-
-            // Reduce IL2CPP memory usage to prevent GitHub Actions OOM crashes
-            PlayerSettings.SetIl2CppCompilerConfiguration(BuildTargetGroup.Android, Il2CppCompilerConfiguration.Debug);
-            PlayerSettings.SetAdditionalIl2CppArgs("--maximum-il2cpp-compiler-threads=1");
 
             // Orientation: landscape only
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
