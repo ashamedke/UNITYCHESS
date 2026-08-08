@@ -1,0 +1,126 @@
+.root-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    background-color: transparent;
+}
+
+/* On mobile, typically the board is at the top (portrait) or left (landscape). 
+   We assume landscape based on ScreenManager.cs */
+
+.board-overlay {
+    width: 60%;
+    height: 100%;
+    position: relative;
+    background-color: transparent;
+}
+
+.screens-container {
+    width: 40%;
+    height: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen-title {
+    color: white;
+    font-size: 24px;
+    -unity-font-style: bold;
+    margin-bottom: 15px;
+}
+
+.bottom-nav {
+    height: 60px;
+    background-color: #2a2a2a;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    border-top-width: 1px;
+    border-top-color: #444;
+}
+
+.nav-btn {
+    background-color: transparent;
+    border-width: 0;
+    color: #888;
+    font-size: 16px;
+    height: 100%;
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+}
+
+.nav-btn-active {
+    color: #4CAF50;
+    border-bottom-width: 3px;
+    border-bottom-color: #4CAF50;
+}
+
+.btn {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+}
+
+.btn-secondary {
+    background-color: #555;
+}
+
+.eval-bar-container {
+    position: absolute;
+    left: 10px;
+    top: 10%;
+    width: 20px;
+    height: 80%;
+    background-color: #333;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.eval-bar-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%; /* 50% = +0.0 */
+    background-color: white;
+}
+
+.eval-text {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: black;
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.engine-lines-container {
+    background-color: #111;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.engine-line {
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 5px;
+}

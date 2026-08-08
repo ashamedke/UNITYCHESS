@@ -13,28 +13,40 @@ using UnityEngine;
 /// </summary>
 public class PieceManager : MonoBehaviour
 {
-    // ── Prefab references (assign in Inspector) ───────────────────────────────
-    [Header("White Piece Prefabs")]
-    [SerializeField] private GameObject wKing;
-    [SerializeField] private GameObject wQueen;
-    [SerializeField] private GameObject wRook;
-    [SerializeField] private GameObject wBishop;
-    [SerializeField] private GameObject wKnight;
-    [SerializeField] private GameObject wPawn;
-
-    [Header("Black Piece Prefabs")]
-    [SerializeField] private GameObject bKing;
-    [SerializeField] private GameObject bQueen;
-    [SerializeField] private GameObject bRook;
-    [SerializeField] private GameObject bBishop;
-    [SerializeField] private GameObject bKnight;
-    [SerializeField] private GameObject bPawn;
-
     [Header("References")]
     [SerializeField] private BoardScene3D  boardScene;
     [SerializeField] private MoveAnimator  animator;
-    [SerializeField] private CapturedRack  whiteRack; // captured white pieces display
-    [SerializeField] private CapturedRack  blackRack; // captured black pieces display
+    // UI elements won't work easily here, skipping racks for now or they can be fixed later
+
+    // ── Dynamic Prefabs Loaded from Resources ─────────────────────────────────
+    private GameObject wKing, wQueen, wRook, wBishop, wKnight, wPawn;
+    private GameObject bKing, bQueen, bRook, bBishop, bKnight, bPawn;
+
+    private void Awake()
+    {
+        // Load the 3D models at runtime!
+        wKing   = LoadModel("white_king");
+        wQueen  = LoadModel("white_queen");
+        wRook   = LoadModel("white_rook");
+        wBishop = LoadModel("white_bishop");
+        wKnight = LoadModel("white_knight");
+        wPawn   = LoadModel("white_pawn");
+
+        bKing   = LoadModel("black_king");
+        bQueen  = LoadModel("black_queen");
+        bRook   = LoadModel("black_rook");
+        bBishop = LoadModel("black_bishop");
+        bKnight = LoadModel("black_knight");
+        bPawn   = LoadModel("black_pawn");
+    }
+
+    private GameObject LoadModel(string name)
+    {
+        // Resources.Load looks in Assets/Resources
+        var obj = Resources.Load<GameObject>("Models/" + name);
+        if (obj == null) Debug.LogError("Failed to load model: " + name);
+        return obj;
+    }
 
     // ── State ──────────────────────────────────────────────────────────────────
     private readonly Dictionary<int, GameObject> _pieces = new Dictionary<int, GameObject>();
@@ -112,13 +124,10 @@ public class PieceManager : MonoBehaviour
         _pieces.Remove(move.From);
         _pieces[move.To] = movingPiece;
 
-        // Determine capture side rack
-        CapturedRack rack = move.Color == ChessBoard.WHITE ? blackRack : whiteRack;
-
-        // Fire animator
+        // Fire animator (skipping racks for now)
         animator?.AnimateMove(
             movingPiece, targetPos,
-            capturedPiece, rack,
+            capturedPiece, null, // rack
             castleRook, rookTarget,
             move.IsPromotion ? move.Promotion : '\0',
             GetPrefabForPromo(move.Promotion, move.Color),

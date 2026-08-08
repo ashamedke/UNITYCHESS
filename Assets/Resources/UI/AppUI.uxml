@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ui="UnityEngine.UIElements"
+    xmlns:editor="UnityEditor.UIElements"
+    xsi:noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd">
+
+    <ui:Style src="AppUI.uss" />
+
+    <ui:VisualElement name="root" class="root-container">
+        <!-- 3D Board Area (Transparent Overlay) -->
+        <ui:VisualElement name="board-overlay" class="board-overlay">
+            <ui:VisualElement name="eval-bar-container" class="eval-bar-container">
+                <ui:VisualElement name="eval-bar-fill" class="eval-bar-fill" />
+                <ui:Label name="eval-text" class="eval-text" text="+0.0" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Screens Container -->
+        <ui:VisualElement name="screens-container" class="screens-container">
+            <!-- Watch Screen -->
+            <ui:VisualElement name="watch-screen" class="screen">
+                <ui:Label text="Watch Top Games" class="screen-title" />
+                <ui:ScrollView name="watch-games-list" class="scroll-list" />
+            </ui:VisualElement>
+
+            <!-- Analyze Screen -->
+            <ui:VisualElement name="analyze-screen" class="screen" style="display: none;">
+                <ui:Label text="Analysis Board" class="screen-title" />
+                <ui:VisualElement name="engine-lines-container" class="engine-lines-container">
+                    <ui:Label name="line-1" text="d22 +0.5 e4 e5 Nf3" class="engine-line" />
+                    <ui:Label name="line-2" text="d22 +0.4 d4 Nf6 c4" class="engine-line" />
+                    <ui:Label name="line-3" text="d22 +0.3 c4 e5 Nc3" class="engine-line" />
+                </ui:VisualElement>
+                <ui:VisualElement class="controls-row">
+                    <ui:Button name="btn-analyze-start" text="Start Engine" class="btn btn-primary" />
+                    <ui:Button name="btn-analyze-stop" text="Stop" class="btn btn-secondary" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Practice Screen -->
+            <ui:VisualElement name="practice-screen" class="screen" style="display: none;">
+                <ui:Label text="Practice Mode" class="screen-title" />
+                <ui:Button name="btn-puzzles" text="Tactics Puzzles" class="btn btn-primary" />
+                <ui:Button name="btn-freepractice" text="Play Computer" class="btn btn-secondary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Bottom Navigation Bar -->
+        <ui:VisualElement name="bottom-nav" class="bottom-nav">
+            <ui:Button name="nav-watch" text="Watch" class="nav-btn nav-btn-active" />
+            <ui:Button name="nav-analyze" text="Analyze" class="nav-btn" />
+            <ui:Button name="nav-practice" text="Practice" class="nav-btn" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

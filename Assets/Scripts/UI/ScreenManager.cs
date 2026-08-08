@@ -1,33 +1,30 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// Singleton that owns all top-level screens and drives which one is visible.
-/// Mirrors the React Router / page-component pattern from App.tsx.
-/// 
-/// Screens are child GameObjects of this manager. At most one is active at a time.
-/// Sub-screens (Puzzles, Import, Stats, FreePractice) are children of PracticeScreen.
+/// Rewritten to use UI Toolkit (UXML/USS) since we have no visual editor.
 /// </summary>
 public class ScreenManager : MonoBehaviour
 {
-    // ── Singleton ────────────────────────────────────────────────────────────
     public static ScreenManager Instance { get; private set; }
 
-    // ── Screen References (assigned in Inspector / by AppController) ─────────
-    [Header("Top-Level Screens")]
-    [SerializeField] private GameObject watchScreen;
-    [SerializeField] private GameObject analyzeScreen;
-    [SerializeField] private GameObject practiceScreen;
-
-    // ── State ────────────────────────────────────────────────────────────────
     public enum Screen { Watch, Analyze, Practice }
 
     private Screen _currentScreen = Screen.Watch;
     public Screen CurrentScreen => _currentScreen;
 
-    // ── Events ───────────────────────────────────────────────────────────────
     public event System.Action<Screen> OnScreenChanged;
 
-    // ── Lifecycle ────────────────────────────────────────────────────────────
+    // UI Elements
+    private VisualElement _watchScreen;
+    private VisualElement _analyzeScreen;
+    private VisualElement _practiceScreen;
+
+    private Button _navWatch;
+    private Button _navAnalyze;
+    private Button _navPractice;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -41,17 +38,32 @@ public class ScreenManager : MonoBehaviour
 
     private void Start()
     {
-        // Force landscape orientation — never unlocked
         UnityEngine.Screen.orientation = ScreenOrientation.AutoRotation;
         UnityEngine.Screen.autorotateToPortrait = false;
         UnityEngine.Screen.autorotateToPortraitUpsideDown = false;
         UnityEngine.Screen.autorotateToLandscapeLeft = true;
         UnityEngine.Screen.autorotateToLandscapeRight = true;
-
-        ShowScreen(Screen.Watch); // Default tab (mirrors App.tsx → /watch)
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    public void InitializeUI(UIDocument doc)
+    {
+        var root = doc.rootVisualElement;
+
+        _watchScreen = root.Q<VisualElement>("watch-screen");
+        _analyzeScreen = root.Q<VisualElement>("analyze-screen");
+        _practiceScreen = root.Q<VisualElement>("practice-screen");
+
+        _navWatch = root.Q<Button>("nav-watch");
+        _navAnalyze = root.Q<Button>("nav-analyze");
+        _navPractice = root.Q<Button>("nav-practice");
+
+        _navWatch?.RegisterCallback<ClickEvent>(ev => ShowWatch());
+        _navAnalyze?.RegisterCallback<ClickEvent>(ev => ShowAnalyze());
+        _navPractice?.RegisterCallback<ClickEvent>(ev => ShowPractice());
+
+        ShowScreen(Screen.Watch);
+    }
+
     public void ShowWatch()   => ShowScreen(Screen.Watch);
     public void ShowAnalyze() => ShowScreen(Screen.Analyze);
     public void ShowPractice() => ShowScreen(Screen.Practice);
@@ -60,16 +72,27 @@ public class ScreenManager : MonoBehaviour
     {
         _currentScreen = target;
 
-        SetActive(watchScreen,    target == Screen.Watch);
-        SetActive(analyzeScreen,  target == Screen.Analyze);
-        SetActive(practiceScreen, target == Screen.Practice);
+        SetDisplay(_watchScreen, target == Screen.Watch);
+        SetDisplay(_analyzeScreen, target == Screen.Analyze);
+        SetDisplay(_practiceScreen, target == Screen.Practice);
+
+        UpdateNavClass(_navWatch, target == Screen.Watch);
+        UpdateNavClass(_navAnalyze, target == Screen.Analyze);
+        UpdateNavClass(_navPractice, target == Screen.Practice);
 
         OnScreenChanged?.Invoke(target);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-    private static void SetActive(GameObject go, bool active)
+    private void SetDisplay(VisualElement el, bool show)
     {
-        if (go != null) go.SetActive(active);
+        if (el != null)
+            el.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    private void UpdateNavClass(Button btn, bool active)
+    {
+        if (btn == null) return;
+        if (active) btn.AddToClassList("nav-btn-active");
+        else btn.RemoveFromClassList("nav-btn-active");
     }
 }
