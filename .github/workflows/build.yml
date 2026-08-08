@@ -96,6 +96,22 @@ jobs:
 
       # game-ci unity-builder@v4 handles license activation internally.
       # No separate activate step needed for Personal license.
+      - name: Free up disk space (optional, gives more room for swap)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+
+      - name: Add Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 10
+
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
