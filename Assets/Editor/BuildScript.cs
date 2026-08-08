@@ -46,6 +46,10 @@ namespace UnityBuilderAction
             PlayerSettings.Android.minSdkVersion       = AndroidSdkVersions.AndroidApiLevel24;
             PlayerSettings.Android.targetSdkVersion    = (AndroidSdkVersions)33;
 
+            // Reduce IL2CPP memory usage to prevent GitHub Actions OOM crashes
+            PlayerSettings.SetIl2CppCompilerConfiguration(BuildTargetGroup.Android, Il2CppCompilerConfiguration.Debug);
+            PlayerSettings.SetAdditionalIl2CppArgs("--maximum-il2cpp-compiler-threads=1");
+
             // Orientation: landscape only
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait = false;

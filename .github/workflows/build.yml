@@ -137,9 +137,11 @@ jobs:
 
       - name: Extract and Push Build Log on Failure
         if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p debug
-          cp -f $(find / -name Editor.log -o -name build.log 2>/dev/null | grep unity3d | head -1) debug/Editor.log || true
+          gh run view ${{ github.run_id }} --log > debug/Editor.log || true
           
       - name: Upload Debug Log
         uses: actions/upload-artifact@v4
