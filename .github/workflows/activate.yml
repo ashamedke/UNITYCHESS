@@ -1,0 +1,38 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# ONE-TIME Unity Personal License Activation
+#
+# HOW TO USE:
+#   1. Push this repo to GitHub
+#   2. Go to Actions → "Activate Unity License" → "Run workflow"
+#   3. Download the .alf artifact from the completed run
+#   4. Visit https://license.unity3d.com/manual
+#   5. Upload the .alf file → Download the .ulf license file
+#   6. In your GitHub repo: Settings → Secrets → Actions → New secret
+#      Name:  UNITY_LICENSE
+#      Value: (paste the entire contents of the .ulf file)
+#   7. Also add secrets: UNITY_EMAIL and UNITY_PASSWORD
+#      (your Unity account credentials — used only for this step)
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: Activate Unity License
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  activation:
+    name: Request Activation File
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request Unity manual activation file
+        id: getManualLicenseFile
+        uses: game-ci/unity-request-activation-file@v2
+        with:
+          unityVersion: 2022.3.62f1
+
+      - name: Upload Activation File as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-activation-file
+          path: ${{ steps.getManualLicenseFile.outputs.filePath }}
+          retention-days: 1
