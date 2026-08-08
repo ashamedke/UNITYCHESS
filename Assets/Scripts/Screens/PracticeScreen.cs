@@ -43,4 +43,10 @@ public class PracticeScreen : MonoBehaviour
         importRoot?.SetActive(sub == SubScreen.Import);
         statsRoot?.SetActive(sub == SubScreen.Stats);
     }
+
+    public void ShowFreePracticeFromPuzzle(string fen, char playerColor)
+    {
+        ShowFreePractice();
+        FreePracticeScreen.Instance?.StartFromPosition(fen, playerColor);
+    }
 }

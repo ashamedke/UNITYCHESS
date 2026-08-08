@@ -65,10 +65,12 @@ public class ImportScreen : MonoBehaviour
     private void HandleAnalyzeAll()
     {
         if (_parsedGames.Count == 0) return;
-        var analyze = AnalyzeScreen.GetInstance();
-        if (analyze == null) return;
-        ScreenManager.Instance?.ShowAnalyze();
-        analyze.LoadPgnList(_parsedGames, 0);
+        var analyze = Object.FindObjectOfType<AnalyzeScreen>(true);
+        if (analyze != null)
+        {
+            ScreenManager.Instance?.ShowAnalyze();
+            analyze.LoadPgnList(_parsedGames, 0);
+        }
     }
 
     // ── File Picker (Android) ─────────────────────────────────────────────────
@@ -140,10 +142,12 @@ public class ImportScreen : MonoBehaviour
 
     private void AnalyzeGame(int index)
     {
-        var analyze = AnalyzeScreen.GetInstance();
-        if (analyze == null) return;
-        ScreenManager.Instance?.ShowAnalyze();
-        analyze.LoadPgn(_parsedGames[index]);
+        var analyze = Object.FindObjectOfType<AnalyzeScreen>(true);
+        if (analyze != null)
+        {
+            ScreenManager.Instance?.ShowAnalyze();
+            analyze.LoadPgn(_parsedGames[index]);
+        }
     }
 
     private void SetError(string msg)
@@ -170,22 +174,5 @@ public class ImportGameRowUI : MonoBehaviour
         if (resultText != null) resultText.text = result;
         if (eventText  != null) eventText.text  = evt;
         analyzeBtn?.onClick.AddListener(() => onAnalyze?.Invoke());
-    }
-}
-
-// Extension to allow AnalyzeScreen to be fetched without a direct reference
-public partial class AnalyzeScreen
-{
-    public static AnalyzeScreen GetInstance() =>
-        FindObjectOfType<AnalyzeScreen>(includeInactive: true);
-}
-
-// Extension for PracticeScreen navigation calls
-public partial class PracticeScreen
-{
-    public void ShowFreePracticeFromPuzzle(string fen, char playerColor)
-    {
-        ShowFreePractice();
-        FreePracticeScreen.Instance?.StartFromPosition(fen, playerColor);
     }
 }
