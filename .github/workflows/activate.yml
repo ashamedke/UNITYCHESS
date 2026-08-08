@@ -1,38 +1,106 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# ONE-TIME Unity Personal License Activation
+# HOW TO GET YOUR UNITY_LICENSE SECRET (game-ci v4 — Personal / Free License)
 #
-# HOW TO USE:
-#   1. Push this repo to GitHub
-#   2. Go to Actions → "Activate Unity License" → "Run workflow"
-#   3. Download the .alf artifact from the completed run
-#   4. Visit https://license.unity3d.com/manual
-#   5. Upload the .alf file → Download the .ulf license file
-#   6. In your GitHub repo: Settings → Secrets → Actions → New secret
-#      Name:  UNITY_LICENSE
-#      Value: (paste the entire contents of the .ulf file)
-#   7. Also add secrets: UNITY_EMAIL and UNITY_PASSWORD
-#      (your Unity account credentials — used only for this step)
+# The old unity-request-activation-file action is deprecated.
+# game-ci v4 now requires local activation via Unity Hub.
+#
+# FOLLOW THESE STEPS ONCE ON YOUR PC:
+#
+#  1. Download & install Unity Hub:  https://unity.com/download
+#
+#  2. Log in to Unity Hub with the Unity account you want to use for CI.
+#
+#  3. Go to:  Unity Hub → top-left avatar → Preferences → Licenses → Add
+#             Select "Get a free personal license" and complete the steps.
+#
+#  4. Find the generated .ulf file on disk:
+#       Windows : C:\ProgramData\Unity\Unity_lic.ulf
+#       Mac     : /Library/Application Support/Unity/Unity_lic.ulf
+#       Linux   : ~/.local/share/unity3d/Unity/Unity_lic.ulf
+#     (Enable "Show hidden files" in your file explorer if needed.)
+#
+#  5. Open the .ulf file in any text editor (Notepad is fine).
+#     Copy the ENTIRE contents (it's XML starting with <?xml ...).
+#
+#  6. In your GitHub repo:
+#       Settings → Secrets and variables → Actions → New repository secret
+#
+#     Create these 3 secrets:
+#       UNITY_LICENSE  →  paste the full .ulf XML content
+#       UNITY_EMAIL    →  your Unity account email
+#       UNITY_PASSWORD →  your Unity account password
+#
+#  7. Also add these 4 secrets for Android signing:
+#       ANDROID_KEYSTORE_BASE64  →  base64 of your .jks file (see README.md)
+#       ANDROID_KEY_ALIAS        →  key alias
+#       ANDROID_KEY_PASS         →  key password
+#       ANDROID_STORE_PASS       →  keystore password
+#
+#  Once all 7 secrets are set, push any commit to main and the
+#  "Build Android APK" workflow will build and sign your APK automatically.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# This workflow is a VERIFICATION STEP — it checks that your UNITY_LICENSE
+# secret is valid by running a quick activation test. Run it manually after
+# adding your secrets to confirm everything works before a full build.
 # ══════════════════════════════════════════════════════════════════════════════
 
-name: Activate Unity License
+name: Verify Unity License
 
 on:
   workflow_dispatch: {}
 
 jobs:
-  activation:
-    name: Request Activation File
+  verify-license:
+    name: Verify Unity License Secret
     runs-on: ubuntu-latest
     steps:
-      - name: Request Unity manual activation file
-        id: getManualLicenseFile
-        uses: game-ci/unity-request-activation-file@v2
-        with:
-          unityVersion: 2022.3.62f1
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Upload Activation File as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: unity-activation-file
-          path: ${{ steps.getManualLicenseFile.outputs.filePath }}
-          retention-days: 1
+      - name: Verify UNITY_LICENSE secret is set
+        run: |
+          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
+            echo "❌ UNITY_LICENSE secret is NOT set."
+            echo ""
+            echo "Follow the instructions in .github/workflows/activate.yml"
+            echo "to activate Unity Hub locally and add the .ulf file as a secret."
+            exit 1
+          else
+            echo "✅ UNITY_LICENSE secret is set (length: ${#UNITY_LICENSE} chars)"
+          fi
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+      - name: Verify UNITY_EMAIL and UNITY_PASSWORD are set
+        run: |
+          if [ -z "${{ secrets.UNITY_EMAIL }}" ]; then
+            echo "❌ UNITY_EMAIL secret is NOT set."; exit 1
+          fi
+          if [ -z "${{ secrets.UNITY_PASSWORD }}" ]; then
+            echo "❌ UNITY_PASSWORD secret is NOT set."; exit 1
+          fi
+          echo "✅ UNITY_EMAIL and UNITY_PASSWORD are set."
+
+      - name: Verify Android signing secrets are set
+        run: |
+          MISSING=""
+          [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ] && MISSING="$MISSING ANDROID_KEYSTORE_BASE64"
+          [ -z "${{ secrets.ANDROID_KEY_ALIAS }}" ]       && MISSING="$MISSING ANDROID_KEY_ALIAS"
+          [ -z "${{ secrets.ANDROID_KEY_PASS }}" ]        && MISSING="$MISSING ANDROID_KEY_PASS"
+          [ -z "${{ secrets.ANDROID_STORE_PASS }}" ]      && MISSING="$MISSING ANDROID_STORE_PASS"
+          if [ -n "$MISSING" ]; then
+            echo "⚠️  Missing Android signing secrets:$MISSING"
+            echo "The build will produce an UNSIGNED APK."
+          else
+            echo "✅ All Android signing secrets are set."
+          fi
+
+      - name: All secrets verified
+        run: |
+          echo ""
+          echo "══════════════════════════════════════════════"
+          echo "  ✅ All required secrets are configured."
+          echo "  Push a commit to main to trigger a build."
+          echo "══════════════════════════════════════════════"

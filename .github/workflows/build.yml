@@ -1,16 +1,20 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# ChessGod WAP — Unity Android Build Pipeline
+# ChessGod WAP — Unity Android Build Pipeline  (game-ci v4)
 #
-# REQUIRED GITHUB SECRETS:
-#   UNITY_LICENSE      — Contents of .ulf license file (from activate.yml workflow)
+# REQUIRED GITHUB SECRETS (set these before triggering a build):
+#   UNITY_LICENSE      — Full contents of Unity_lic.ulf (see activate.yml)
 #   UNITY_EMAIL        — Your Unity account email
 #   UNITY_PASSWORD     — Your Unity account password
-#   ANDROID_KEYSTORE_BASE64  — Base64-encoded keystore file
-#                              (generate: keytool -genkey -v -keystore chessgod.jks ...)
-#                              (encode:   base64 -w 0 chessgod.jks)
-#   ANDROID_KEY_ALIAS        — Key alias used when generating keystore
+#   ANDROID_KEYSTORE_BASE64  — Base64-encoded .jks keystore file
+#   ANDROID_KEY_ALIAS        — Key alias
 #   ANDROID_KEY_PASS         — Key password
 #   ANDROID_STORE_PASS       — Keystore password
+#
+# HOW TO GENERATE A KEYSTORE (run once on any machine with Java):
+#   keytool -genkey -v -keystore chessgod.jks -alias ChessGod \
+#           -keyalg RSA -keysize 2048 -validity 10000
+#   # Encode to base64 (PowerShell):
+#   [Convert]::ToBase64String([IO.File]::ReadAllBytes("chessgod.jks"))
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: Build Android APK
@@ -24,42 +28,44 @@ on:
 
 env:
   UNITY_VERSION: 2022.3.62f1
-  STOCKFISH_VERSION: sf_17.1
   STOCKFISH_URL: https://github.com/official-stockfish/Stockfish/releases/download/sf_17.1/stockfish-android-armv8.tar
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
-  # JOB 1: Prepare assets that must be ready before Unity opens the project
+  # JOB 1: Download Stockfish binary (done outside Unity to keep build fast)
   # ─────────────────────────────────────────────────────────────────────────
   prepare-assets:
-    name: Prepare Assets (Stockfish)
+    name: Download Stockfish ARM64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Stockfish ARM64 binary
+      - name: Download and extract Stockfish ARM64
         run: |
           mkdir -p Assets/Plugins/Android
-          curl -L "${{ env.STOCKFISH_URL }}" -o stockfish.tar
+          curl -fsSL "${{ env.STOCKFISH_URL }}" -o stockfish.tar
           tar -xf stockfish.tar
-          # Find the binary and copy it
-          find . -name "stockfish*" -type f ! -name "*.tar" | head -1 | xargs -I{} cp {} Assets/Plugins/Android/stockfish
+          # Find the binary (name varies by release)
+          SF_BIN=$(find . -type f \( -name "stockfish" -o -name "stockfish-*" \) \
+                    ! -name "*.tar" ! -name "*.zip" | head -1)
+          echo "Found binary: $SF_BIN"
+          cp "$SF_BIN" Assets/Plugins/Android/stockfish
           chmod +x Assets/Plugins/Android/stockfish
-          echo "✅ Stockfish binary placed at Assets/Plugins/Android/stockfish"
+          echo "✅ Stockfish binary ready"
           ls -lh Assets/Plugins/Android/stockfish
 
-      - name: Upload prepared assets
+      - name: Upload Stockfish binary
         uses: actions/upload-artifact@v4
         with:
-          name: prepared-assets
+          name: stockfish-binary
           path: Assets/Plugins/Android/stockfish
           retention-days: 1
 
   # ─────────────────────────────────────────────────────────────────────────
-  # JOB 2: Unity Build
+  # JOB 2: Build Unity Android APK
   # ─────────────────────────────────────────────────────────────────────────
   build:
-    name: Build Unity Android APK
+    name: Build Android APK
     runs-on: ubuntu-latest
     needs: prepare-assets
     timeout-minutes: 90
@@ -70,16 +76,16 @@ jobs:
         with:
           lfs: true
 
-      - name: Download prepared Stockfish binary
+      - name: Download Stockfish binary
         uses: actions/download-artifact@v4
         with:
-          name: prepared-assets
+          name: stockfish-binary
           path: Assets/Plugins/Android
 
-      - name: Fix Stockfish execute permission
+      - name: Fix Stockfish permissions
         run: chmod +x Assets/Plugins/Android/stockfish
 
-      - name: Cache Unity Library
+      - name: Cache Unity Library folder
         uses: actions/cache@v4
         with:
           path: Library
@@ -88,13 +94,8 @@ jobs:
             Library-Android-
             Library-
 
-      - name: Activate Unity License
-        uses: game-ci/unity-activate@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL:   ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-
+      # game-ci unity-builder@v4 handles license activation internally.
+      # No separate activate step needed for Personal license.
       - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
@@ -102,36 +103,30 @@ jobs:
           UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: Android
-          unityVersion:   ${{ env.UNITY_VERSION }}
-          buildName:      ChessGodWAP
-          buildsPath:     build
-          buildMethod:    UnityBuilderAction.BuildScript.Build
-          androidExportType: androidPackage
+          targetPlatform:        Android
+          unityVersion:          ${{ env.UNITY_VERSION }}
+          buildName:             ChessGodWAP
+          buildsPath:            build
+          buildMethod:           UnityBuilderAction.BuildScript.Build
+          androidExportType:     androidPackage
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           androidKeystorePass:   ${{ secrets.ANDROID_STORE_PASS }}
           androidKeyaliasName:   ${{ secrets.ANDROID_KEY_ALIAS }}
           androidKeyaliasPass:   ${{ secrets.ANDROID_KEY_PASS }}
-          androidTargetSdkVersion: AndroidApiLevel33
-          customParameters: >
-            -scriptingBackend IL2CPP
-            -buildTarget Android
-
-      - name: Return Unity license
-        if: always()
-        uses: game-ci/unity-return-license@v2
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: ChessGodWAP-${{ github.run_number }}
           path: build/Android/*.apk
           retention-days: 30
 
-      - name: Print APK info
+      - name: Print build summary
+        if: success()
         run: |
-          echo "══════════════════════════════════════"
-          echo "  Build complete!"
-          echo "  Download APK from Actions artifacts"
-          echo "══════════════════════════════════════"
-          ls -lh build/Android/*.apk 2>/dev/null || echo "No APK found — check build logs"
+          echo "══════════════════════════════════════════════"
+          echo "  ✅ BUILD SUCCEEDED"
+          echo "  Download APK from the Actions Artifacts tab"
+          echo "══════════════════════════════════════════════"
+          ls -lh build/Android/*.apk 2>/dev/null || echo "(APK not found in expected path)"
