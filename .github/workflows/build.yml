@@ -126,10 +126,6 @@ jobs:
           buildMethod:           UnityBuilderAction.BuildScript.Build
           androidExportType:     androidPackage
           allowDirtyBuild:       true
-          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          androidKeystorePass:   ${{ secrets.ANDROID_STORE_PASS }}
-          androidKeyaliasName:   ${{ secrets.ANDROID_KEY_ALIAS }}
-          androidKeyaliasPass:   ${{ secrets.ANDROID_KEY_PASS }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

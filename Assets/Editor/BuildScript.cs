@@ -75,7 +75,8 @@ namespace UnityBuilderAction
             }
             else
             {
-                Debug.LogWarning("[Build] No keystore — building unsigned APK");
+                PlayerSettings.Android.useCustomKeystore = false;
+                Debug.LogWarning("[Build] No keystore provided — building unsigned/debug APK");
             }
 
             // Build
